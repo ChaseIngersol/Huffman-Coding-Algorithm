@@ -37,13 +37,11 @@ public class HuffmanCode {
 
         encodeData(root, "", encodedMap);
 
-        System.out.println();
-        System.out.println("Character | Binary");
+        System.out.print("\nCharacter | Binary");
         encodedMap.display();
         System.out.println();
 
-        System.out.println("Original string uncompressed: " + "\n" + input);
-        System.out.println();
+        System.out.println("Original string uncompressed: " + "\n" + input + "\n");
         System.out.println("Original string compressed: ");
 
         StringBuilder sb = new StringBuilder();
@@ -73,10 +71,7 @@ public class HuffmanCode {
 
     }
 
-    public static boolean isLeaf(Node root) {
-        //returns true if both conditions return ture
-        return root.left == null && root.right == null;
-    }
+
 
     public static void encodeData(Node root, String str, HashMap<Character, String> huffmanCode) {
         if (root == null) {
@@ -119,6 +114,11 @@ public class HuffmanCode {
             }
         }
         return charFreqMap;
+    }
+
+    public static boolean isLeaf(Node root) {
+        //returns true if both conditions return ture
+        return root.left == null && root.right == null;
     }
 
     public static String sanitizeInput(String input) {
