@@ -7,7 +7,7 @@ public class HuffmanCode {
     public static void main(String args[]) {
 
         // Get user input
-        System.out.println("Enter a string in all lowercase: ");
+        System.out.println("Enter a string to compress (numbers and symbols will be removed): ");
         Scanner s = new Scanner(System.in);
         String input = sanitizeInput(s.nextLine());
 
@@ -15,6 +15,7 @@ public class HuffmanCode {
         HashMap<Character, Integer> charFreqMap = buildFreqMap(input);
 
         // Print frequency map
+        System.out.println();
         System.out.println("Character | Frequency:");
         charFreqMap.display();
 
