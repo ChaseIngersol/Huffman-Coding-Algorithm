@@ -39,7 +39,7 @@ public class HashMap<K, V> {
         }
     }
 
-    private int capacity = 16; //Initial default capacity
+    private int capacity = 200; //Initial default capacity
 
     private Entry<K, V>[] table; //Array of Entry object
 
@@ -112,7 +112,7 @@ public class HashMap<K, V> {
             if(table[i] != null){
                 Entry<K, V> currentNode = table[i];
                 while (currentNode != null){
-                    System.out.println(String.format("Key is %s and value is %s", currentNode.getKey(), currentNode.getValue()));
+                    System.out.println(String.format("%s              %s", currentNode.getKey(), currentNode.getValue()));
                     currentNode = currentNode.getNext();
                 }
             }
