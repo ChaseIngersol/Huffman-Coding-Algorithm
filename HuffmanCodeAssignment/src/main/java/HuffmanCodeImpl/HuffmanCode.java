@@ -1,134 +1,154 @@
 package HuffmanCodeImpl;
 
 import java.util.Scanner;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-//defining a class that creates nodes of the tree  
 
-//main class  
 public class HuffmanCode {
 
-    //driver code
     public static void main(String args[]) {
+
+        // Get user input
+        System.out.println("Enter a string to compress (numbers and symbols will be removed): ");
         Scanner s = new Scanner(System.in);
         String input = sanitizeInput(s.nextLine());
 
-        createHuffmanTree(input);
+        // Build character frequency map from input string
+        HashMap<Character, Integer> charFreqMap = buildFreqMap(input);
+
+        // Print frequency map
+        System.out.println();
+        System.out.println("Character | Frequency:");
+        charFreqMap.display();
+
+        // Convert the frequency map to a priority queue to build the Huffman Tree with
+        PriorityQueue nodeQueue = charFreqMap.convertToPriorityQueue();
+
+        // Build the Huffman Tree from the priority queue
+        Node root = buildHuffmanTree(null, nodeQueue);
+
+        // Build the binary encoded character map
+        HashMap<Character, String> encodedMap = new HashMap<>();
+        encodeToMap(root, "", encodedMap);
+
+        // Display the binary encoded character map
+        System.out.print("\nCharacter | Binary\n");
+        encodedMap.display();
+        System.out.println();
+
+        // Display the original uncompressed input string
+        System.out.println("Original string uncompressed: " + "\n" + input + "\n");
+
+        // Display the compressed binary encoded input string
+        StringBuilder sb = new StringBuilder();
+        String compressed = printEncodedString(sb, input, encodedMap);
+        System.out.println("Original string compressed: " + "\n" + compressed + "\n");
+
+        // Display the original input by decoding from the compressed binary string
+        System.out.println("The compressed string when decoded is: ");
+        printDecodedString(sb, root);
+        System.out.println();
+
+
+        // Print original size, compressed size, and percentage difference
+        System.out.println("Original size in bits: ");
+        double originalSize = input.length() * 8;
+        System.out.println((int)originalSize + "\n");
+
+        System.out.println("Compressed size in bits: ");
+        double compressedSize = compressed.length();
+        System.out.println((int)compressedSize + "\n");
+
+        double percentDifference = (originalSize - compressedSize) / originalSize * 100;
+        System.out.println("Compression percentage: " + String.format("%.2f", percentDifference) + "%");
     }
 
-
-    //function to build Huffman tree
-    public static void createHuffmanTree(String text) {
-        //base case: if user does not provides string  
-        if (text == null || text.length() == 0) {
-            return;
-        }
-        //count the frequency of appearance of each character and store it in a map  
-        //creating an instance of the Map   
-        Map<Character, Integer> freq = new HashMap<>();
-        //loop iterates over the string and converts the text into character array  
-        for (char c : text.toCharArray()) {
-            //storing character and their frequency into Map by invoking the put() method   
-            freq.put(c, freq.getOrDefault(c, 0) + 1);
-        }
-        //create a priority queue that stores current nodes of the Huffman tree.  
-        //here a point to note that the highest priority means the lowest frequency   
-        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(l -> l.freq));
-        //loop iterate over the Map and returns a Set view of the mappings contained in this Map  
-        for (var entry : freq.entrySet()) {
-            //creates a leaf node and add it to the queue  
-            pq.add(new Node(entry.getKey(), entry.getValue()));
-        }
-        //while loop runs until there is more than one node in the queue  
-        while (pq.size() != 1) {
-            //removing the nodes having the highest priority (the lowest frequency) from the queue  
-            Node left = pq.poll();
-            Node right = pq.poll();
-            //create a new internal node with these two nodes as children and with a frequency equal to the sum of both nodes' frequencies. Add the new node to the priority queue.  
-            //sum up the frequency of the nodes (left and right) that we have deleted   
-            int sum = left.freq + right.freq;
-            //adding a new internal node (deleted nodes i.e. right and left) to the queue with a frequency that is equal to the sum of both nodes  
-            pq.add(new Node(null, sum, left, right));
-        }
-        //root stores pointer to the root of Huffman Tree  
-        Node root = pq.peek();
-        //trace over the Huffman tree and store the Huffman codes in a map  
-        Map<Character, String> huffmanCode = new HashMap<>();
-        encodeData(root, "", huffmanCode);
-        //print the Huffman codes for the characters  
-        System.out.println("Huffman Codes of the characters are: " + huffmanCode);
-        //prints the initial data  
-        System.out.println("The initial string is: " + text);
-        //creating an instance of the StringBuilder class   
-        StringBuilder sb = new StringBuilder();
-        //loop iterate over the character array  
-        for (char c : text.toCharArray()) {
-            //prints encoded string by getting characters   
-            sb.append(huffmanCode.get(c));
-        }
-        System.out.println("The encoded string is: " + sb);
-        System.out.print("The decoded string is: ");
+    public static void printDecodedString(StringBuilder sb, Node root) {
         if (isLeaf(root)) {
-            //special case: For input like a, aa, aaa, etc.  
             while (root.freq-- > 0) {
                 System.out.print(root.ch);
             }
         } else {
-            //traverse over the Huffman tree again and this time, decode the encoded string  
             int index = -1;
             while (index < sb.length() - 1) {
-                index = decodeData(root, index, sb);
+                index = decodeFromHuffmanTree(root, index, sb);
             }
         }
+        System.out.println();
     }
 
-    //traverse the Huffman Tree and store Huffman Codes in a Map
-    //function that encodes the data  
-    public static void encodeData(Node root, String str, Map<Character, String> huffmanCode) {
+    public static String printEncodedString(StringBuilder sb, String input, HashMap<Character, String> encodedMap) {
+        for (char c : input.toCharArray()) {
+            sb.append(encodedMap.get(c));
+        }
+        return sb.toString();
+    }
+
+    public static Node buildHuffmanTree(Node root, PriorityQueue queue) {
+        while (queue.size() > 1) {
+            Node first = queue.peekMin();
+            queue.remove();
+            Node second = queue.peekMin();
+            queue.remove();
+            Node newParent = new Node();
+            newParent.freq = first.freq + second.freq;
+            newParent.ch = '~';
+            newParent.left = first;
+            newParent.right = second;
+            root = newParent;
+            queue.insert(newParent);
+        }
+        return root;
+    }
+
+    public static void encodeToMap(Node root, String str, HashMap<Character, String> huffmanCode) {
         if (root == null) {
             return;
         }
-        //checks if the node is a leaf node or not  
         if (isLeaf(root)) {
             huffmanCode.put(root.ch, str.length() > 0 ? str : "1");
         }
-        encodeData(root.left, str + '0', huffmanCode);
-        encodeData(root.right, str + '1', huffmanCode);
+        encodeToMap(root.left, str + '0', huffmanCode);
+        encodeToMap(root.right, str + '1', huffmanCode);
     }
 
-    //traverse the Huffman Tree and decode the encoded string function that decodes the encoded data
-    public static int decodeData(Node root, int index, StringBuilder sb) {
-        //checks if the root node is null or not  
+    public static int decodeFromHuffmanTree(Node root, int index, StringBuilder sb) {
         if (root == null) {
             return index;
         }
-        //checks if the node is a leaf node or not  
         if (isLeaf(root)) {
             System.out.print(root.ch);
             return index;
         }
         index++;
         root = (sb.charAt(index) == '0') ? root.left : root.right;
-        index = decodeData(root, index, sb);
+        index = decodeFromHuffmanTree(root, index, sb);
         return index;
     }
 
-    //function to check if the Huffman Tree contains a single node
+    public static HashMap<Character, Integer> buildFreqMap(String input) {
+        HashMap<Character, Integer> charFreqMap = new HashMap<Character, Integer>();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            Integer val = charFreqMap.get(c);
+            if (val != null) {
+                charFreqMap.put(c, val + 1);
+            } else {
+                charFreqMap.put(c, 1);
+            }
+        }
+        return charFreqMap;
+    }
+
     public static boolean isLeaf(Node root) {
-        //returns true if both conditions return ture  
         return root.left == null && root.right == null;
     }
 
-    public static String sanitizeInput(String input){
+    public static String sanitizeInput(String input) {
         StringBuilder inputSanitized = new StringBuilder();
-        for(int i = 0; i < input.length(); i++){
-            if(input.charAt(i) == 32 || input.charAt(i) >= 65 && input.charAt(i) <= 90 || input.charAt(i) >= 97 && input.charAt(i) <= 122){
+        for (int i = 0; i < input.length(); i++) {
+            if (input.charAt(i) == 32 || input.charAt(i) >= 65 && input.charAt(i) <= 90 || input.charAt(i) >= 97 && input.charAt(i) <= 122) {
                 inputSanitized.append(input.charAt(i));
             }
         }
         return inputSanitized.toString();
     }
-
-}  
+}
