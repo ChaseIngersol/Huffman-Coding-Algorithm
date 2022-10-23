@@ -4,103 +4,109 @@ import java.util.Scanner;
 
 public class HuffmanCode {
 
-    //driver code
     public static void main(String args[]) {
+
+        // Get user input
         System.out.println("Enter a string in all lowercase: ");
         Scanner s = new Scanner(System.in);
         String input = sanitizeInput(s.nextLine());
 
+        // Build character frequency map from input string
         HashMap<Character, Integer> charFreqMap = buildFreqMap(input);
+
+        // Print frequency map
         System.out.println("Character | Frequency:");
         charFreqMap.display();
 
-        PriorityQueue huffmanTree = charFreqMap.convertToQueue();
+        // Convert the frequency map to a priority queue to build the Huffman Tree with
+        PriorityQueue nodeQueue = charFreqMap.convertToPriorityQueue();
 
-        Node root = null;
-        while (huffmanTree.size() > 1) {
-            Node first = huffmanTree.peekMin();
-            huffmanTree.remove();
-            Node second = huffmanTree.peekMin();
-            huffmanTree.remove();
+        // Build the Huffman Tree from the priority queue
+        Node root = buildHuffmanTree(null, nodeQueue);
 
+        // Build the binary encoded character map
+        HashMap<Character, String> encodedMap = new HashMap<>();
+        encodeToMap(root, "", encodedMap);
+
+        // Display the binary encoded character map
+        System.out.print("\nCharacter | Binary\n");
+        encodedMap.display();
+        System.out.println();
+
+        // Display the original uncompressed input string
+        System.out.println("Original string uncompressed: " + "\n" + input + "\n");
+
+        // Display the compressed binary encoded input string
+        StringBuilder sb = new StringBuilder();
+        System.out.println("Original string compressed: " + printEncodedString(sb, input, encodedMap) + "\n");
+
+        // Display the original input by decoding from the compressed binary string
+        System.out.println("The compressed string when decoded is: ");
+        printDecodedString(sb, root);
+    }
+
+    public static void printDecodedString(StringBuilder sb, Node root) {
+        if (isLeaf(root)) {
+            while (root.freq-- > 0) {
+                System.out.print(root.ch);
+            }
+        } else {
+            int index = -1;
+            while (index < sb.length() - 1) {
+                index = decodeFromHuffmanTree(root, index, sb);
+            }
+        }
+        System.out.println();
+    }
+
+    public static String printEncodedString(StringBuilder sb, String input, HashMap<Character, String> encodedMap) {
+        for (char c : input.toCharArray()) {
+            sb.append(encodedMap.get(c));
+        }
+        return sb.toString();
+    }
+
+    public static Node buildHuffmanTree(Node root, PriorityQueue queue) {
+        while (queue.size() > 1) {
+            Node first = queue.peekMin();
+            queue.remove();
+            Node second = queue.peekMin();
+            queue.remove();
             Node newParent = new Node();
             newParent.freq = first.freq + second.freq;
             newParent.ch = '~';
             newParent.left = first;
             newParent.right = second;
             root = newParent;
-            huffmanTree.insert(newParent);
-
+            queue.insert(newParent);
         }
-
-        HashMap<Character, String> encodedMap = new HashMap<>();
-
-        encodeData(root, "", encodedMap);
-
-        System.out.print("\nCharacter | Binary");
-        encodedMap.display();
-        System.out.println();
-
-        System.out.println("Original string uncompressed: " + "\n" + input + "\n");
-        System.out.println("Original string compressed: ");
-
-        StringBuilder sb = new StringBuilder();
-        //loop iterate over the character array
-        for (char c : input.toCharArray()) {
-            //prints encoded string by getting characters
-            sb.append(encodedMap.get(c));
-        }
-        System.out.println(sb + "\n");
-
-
-        System.out.println("The compressed string when decoded is: ");
-        if (isLeaf(root)) {
-            //special case: For input like a, aa, aaa, etc.
-            while (root.freq-- > 0) {
-                System.out.print(root.ch);
-            }
-        } else {
-            //traverse over the Huffman tree again and this time, decode the encoded string
-            int index = -1;
-            while (index < sb.length() - 1) {
-                index = decodeData(root, index, sb);
-            }
-        }
-        System.out.println();
-
-
+        return root;
     }
 
-
-
-    public static void encodeData(Node root, String str, HashMap<Character, String> huffmanCode) {
+    public static void encodeToMap(Node root, String str, HashMap<Character, String> huffmanCode) {
         if (root == null) {
             return;
         }
-        //checks if the node is a leaf node or not
         if (isLeaf(root)) {
             huffmanCode.put(root.ch, str.length() > 0 ? str : "1");
         }
-        encodeData(root.left, str + '0', huffmanCode);
-        encodeData(root.right, str + '1', huffmanCode);
+        encodeToMap(root.left, str + '0', huffmanCode);
+        encodeToMap(root.right, str + '1', huffmanCode);
     }
 
-    public static int decodeData(Node root, int index, StringBuilder sb) {
-        //checks if the root node is null or not
+    public static int decodeFromHuffmanTree(Node root, int index, StringBuilder sb) {
         if (root == null) {
             return index;
         }
-        //checks if the node is a leaf node or not
         if (isLeaf(root)) {
             System.out.print(root.ch);
             return index;
         }
         index++;
         root = (sb.charAt(index) == '0') ? root.left : root.right;
-        index = decodeData(root, index, sb);
+        index = decodeFromHuffmanTree(root, index, sb);
         return index;
     }
-
 
     public static HashMap<Character, Integer> buildFreqMap(String input) {
         HashMap<Character, Integer> charFreqMap = new HashMap<Character, Integer>();
@@ -117,7 +123,6 @@ public class HuffmanCode {
     }
 
     public static boolean isLeaf(Node root) {
-        //returns true if both conditions return ture
         return root.left == null && root.right == null;
     }
 

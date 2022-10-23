@@ -119,7 +119,7 @@ public class HashMap<K, V> {
         }
     }
 
-    public PriorityQueue convertToQueue(){
+    public PriorityQueue convertToPriorityQueue(){
         PriorityQueue queue = new PriorityQueue(capacity);
         for(int i = 0; i < capacity; i++){
             if(table[i] != null){
