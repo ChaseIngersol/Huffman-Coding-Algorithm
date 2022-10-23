@@ -1,10 +1,8 @@
 package HuffmanCodeImpl;
 
 class Node {
-
     int freq;
     char ch;
-
     Node left;
     Node right;
 
