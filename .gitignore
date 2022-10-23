@@ -1,4 +1,6 @@
 
-HuffmanCodeAssignment/.idea/
+.idea/
+HuffmanCodeAssignment/target/
+HuffmanCodeAssignment/HuffmanCodeAssignment.iml
 
 *.class
