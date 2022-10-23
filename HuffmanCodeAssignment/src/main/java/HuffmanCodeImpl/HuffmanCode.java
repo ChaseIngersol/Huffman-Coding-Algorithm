@@ -38,11 +38,26 @@ public class HuffmanCode {
 
         // Display the compressed binary encoded input string
         StringBuilder sb = new StringBuilder();
-        System.out.println("Original string compressed: " + printEncodedString(sb, input, encodedMap) + "\n");
+        String compressed = printEncodedString(sb, input, encodedMap);
+        System.out.println("Original string compressed: " + "\n" + compressed + "\n");
 
         // Display the original input by decoding from the compressed binary string
         System.out.println("The compressed string when decoded is: ");
         printDecodedString(sb, root);
+        System.out.println();
+
+
+        // Print original size, compressed size, and percentage difference
+        System.out.println("Original size in bits: ");
+        double originalSize = input.length() * 8;
+        System.out.println((int)originalSize + "\n");
+
+        System.out.println("Compressed size in bits: ");
+        double compressedSize = compressed.length();
+        System.out.println((int)compressedSize + "\n");
+
+        double percentDifference = (originalSize - compressedSize) / originalSize * 100;
+        System.out.println("Compression percentage: " + String.format("%.2f", percentDifference) + "%");
     }
 
     public static void printDecodedString(StringBuilder sb, Node root) {
