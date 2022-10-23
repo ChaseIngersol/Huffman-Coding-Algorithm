@@ -119,6 +119,21 @@ public class HashMap<K, V> {
         }
     }
 
+    public PriorityQueue convertToQueue(){
+        PriorityQueue queue = new PriorityQueue(capacity);
+        for(int i = 0; i < capacity; i++){
+            if(table[i] != null){
+                Entry<K, V> currentNode = table[i];
+                while (currentNode != null){
+                    Node curr = new Node((char)currentNode.getKey(), (int)currentNode.getValue());
+                    queue.insert(curr);
+                    currentNode = currentNode.getNext();
+                }
+            }
+        }
+        return queue;
+    }
+
     private int index(K key){
         if(key == null){
             return 0;

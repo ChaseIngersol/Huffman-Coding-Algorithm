@@ -1,20 +1,19 @@
 package HuffmanCodeImpl;
 
 class Node {
-    char ch;
-    int freq;
-    Node left = null;
-    Node right = null;
 
-    Node(char ch, int freq) {
-        this.ch = ch;
-        this.freq = freq;
+    int freq;
+    char ch;
+
+    Node left;
+    Node right;
+
+    public Node(){
+
     }
 
-    public Node(char ch, int freq, Node left, Node right) {
+    public Node(char ch, int freq){
         this.ch = ch;
         this.freq = freq;
-        this.left = left;
-        this.right = right;
     }
 }

@@ -24,7 +24,7 @@ public class PriorityQueue {
         {
             for (j = nItems - 1; j >= 0; j--) // start at end,
             {
-                if (item.ch > queArray[j].ch) // if new item larger,
+                if (item.freq > queArray[j].freq) // if new item larger,
                     queArray[j + 1] = queArray[j]; // shift upward
 
 
